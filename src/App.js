@@ -6,7 +6,6 @@ import generateStupidName from 'sillyname'
 import {SubscriptionClient, addGraphQLSubscriptions} from 'subscriptions-transport-ws'
 
 
-
 // Create WebSocket client
 const wsClient = new SubscriptionClient(`wss://subscriptions.graph.cool/cizfapt9y2jca01393hzx96w9`, {
   reconnect: true,

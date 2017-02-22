@@ -4,6 +4,7 @@ import _ from 'lodash'
 import { GoogleMap, withGoogleMap, Marker, InfoWindow } from 'react-google-maps'
 import withScriptjs from "react-google-maps/lib/async/withScriptjs"
 import Chat from './Chat'
+import Banner from './Banner'
 import { graphql } from 'react-apollo'
 import gql from 'graphql-tag'
 import { withApollo } from 'react-apollo'
@@ -343,11 +344,11 @@ class WorldChat extends Component {
 
   render() {
     return (
-      <div style={{backgroundColor: 'red', height: `100%`}}>
+      <div style={{height: `100%`}}>
         <WorldChatGoogleMap
           googleMapURL='https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyCedl-z2FCu87QocGvWB_GW0mLBPiy7-Kg'
           loadingElement={
-            <div style={{backgroundColor: 'red', height: `100%`}}>
+            <div style={{height: `100%`}}>
               Loading
             </div>
           }
@@ -363,6 +364,7 @@ class WorldChat extends Component {
           onMarkerClick={this.handleMarkerClick}
           onMarkerClose={this.handleMarkerClose}
         />
+        <Banner />
         <Chat
           travellerId={this.state.travellerId}
         />
