@@ -105,6 +105,50 @@ const WorldChatGoogleMap =  _.flowRight(
   )
 )
 
+/*
+
+
+ this.createLocationSubscription = this.props.allLocationsQuery.subscribeToMore({
+ document: gql`
+ subscription {
+ Location(filter: {
+ OR: [
+ {
+ mutation_in: [CREATED]
+ },
+ {
+ mutation_in: [UPDATED]
+ updatedFields_contains: "mymagicimportantfield"
+ }
+ ]
+
+ }) {
+ mutation # CREATED or UPDATED
+ node {
+ id
+ latitude
+ longitude
+ traveller {
+ id
+ name
+ }
+ }
+
+ }
+ }
+ `,
+ variables: null,
+ updateQuery: (previousState, {subscriptionData}) => {
+ const newLocation = subscriptionData.data.createLocation
+ const locations = previousState.allLocations.concat([newLocation])
+ return {
+ allLocations: locations,
+ }
+ }
+ })
+
+ */
+
 class WorldChat extends Component {
 
   state = {
@@ -114,6 +158,24 @@ class WorldChat extends Component {
   }
 
   async componentDidMount() {
+
+    this.subscriptionObserver = this.props.client.subscribe({
+      query: gql`
+          subscription {
+              createTraveller {
+                  id
+                  name
+              }
+          }
+      `,
+    }).subscribe({
+      next(data) {
+        console.log('Subscription callback with new user: ', data)
+      },
+      error(err) {
+        console.error('Subscription callback with error: ', err)
+      },
+    })
 
     this.createLocationSubscription = this.props.allLocationsQuery.subscribeToMore({
       document: gql`

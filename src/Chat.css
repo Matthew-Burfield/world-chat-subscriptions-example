@@ -8,4 +8,5 @@
     top: 20px;
     bottom: 20px;
     border-radius: 2px;
+    box-shadow: 0 0 4px rgba(0,0,0,.2);
 }

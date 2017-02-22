@@ -12,3 +12,11 @@ html {
 #root {
   height: 100%;
 }
+
+div {
+  font-family: Open Sans;
+}
+
+input {
+  font-family: Open Sans;
+}

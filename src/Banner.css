@@ -8,6 +8,7 @@
     height: 42px;
     border-radius: 2px;
     padding-left: 12px;
+    box-shadow: 0 0 4px rgba(0,0,0,.2);
 }
 
 .InfoText {
