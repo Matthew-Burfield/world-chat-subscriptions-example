@@ -39,24 +39,19 @@ const travellerForName = gql`
     }
 `
 
-const createTraveller = gql`
-    mutation createTraveller($name: String!) {
-        createTraveller(name: $name) {
+const createTravellerAndLocation = gql`
+    mutation createTravellerAndLocation($name: String!, $latitude: Float!, $longitude: Float!) {
+        createTraveller(name: $name, location: {
+        latitude: $latitude,
+        longitude: $longitude,
+        }) {
             id
             name
-        }
-    }
-`
-
-const createLocation = gql`
-    mutation createLocation($travellerId: ID!, $latitude: Float!, $longitude: Float!) {
-        createLocation(travellerId: $travellerId, latitude: $latitude, longitude: $longitude) {
-            traveller {
+            location {
                 id
-                name
+                latitude
+                longitude
             }
-            latitude
-            longitude
         }
     }
 `
@@ -105,49 +100,6 @@ const WorldChatGoogleMap =  _.flowRight(
   )
 )
 
-/*
-
-
- this.createLocationSubscription = this.props.allLocationsQuery.subscribeToMore({
- document: gql`
- subscription {
- Location(filter: {
- OR: [
- {
- mutation_in: [CREATED]
- },
- {
- mutation_in: [UPDATED]
- updatedFields_contains: "mymagicimportantfield"
- }
- ]
-
- }) {
- mutation # CREATED or UPDATED
- node {
- id
- latitude
- longitude
- traveller {
- id
- name
- }
- }
-
- }
- }
- `,
- variables: null,
- updateQuery: (previousState, {subscriptionData}) => {
- const newLocation = subscriptionData.data.createLocation
- const locations = previousState.allLocations.concat([newLocation])
- return {
- allLocations: locations,
- }
- }
- })
-
- */
 
 class WorldChat extends Component {
 
@@ -159,73 +111,79 @@ class WorldChat extends Component {
 
   async componentDidMount() {
 
-    this.subscriptionObserver = this.props.client.subscribe({
-      query: gql`
-          subscription {
-              createTraveller {
-                  id
-                  name
-              }
-          }
-      `,
-    }).subscribe({
-      next(data) {
-        console.log('Subscription callback with new user: ', data)
-      },
-      error(err) {
-        console.error('Subscription callback with error: ', err)
-      },
-    })
+    // this.newMessageObserver = this.props.client.subscribe({
+    //   query: gql`
+    //       subscription {
+    //           Message {
+    //               mutation
+    //               node {
+    //                   text
+    //                   sentBy {
+    //                       name
+    //                   }
+    //               }
+    //           }
+    //       }
+    //   `,
+    // }).subscribe({
+    //   next(data) {
+    //     console.log('A mutation of the following type happened on the Message model: ', data)
+    //     // console.log('The changed data looks as follows: ', data.node)
+    //   },
+    //   error(error) {
+    //     console.error('Subscription callback with error: ', error)
+    //   },
+    // })
 
-    this.createLocationSubscription = this.props.allLocationsQuery.subscribeToMore({
+    this.locationSubscription = this.props.allLocationsQuery.subscribeToMore({
       document: gql`
           subscription {
-              createLocation {
-                  id
-                  latitude
-                  longitude
-                  traveller {
+              Location(filter: {
+              mutation_in: [CREATED, UPDATED]
+              }) {
+                  mutation
+                  node {
                       id
-                      name
+                      latitude
+                      longitude
+                      traveller {
+                          id
+                          name
+                      }
                   }
               }
           }
       `,
       variables: null,
       updateQuery: (previousState, {subscriptionData}) => {
-        const newLocation = subscriptionData.data.createLocation
-        const locations = previousState.allLocations.concat([newLocation])
-        return {
-          allLocations: locations,
-        }
-      }
-    })
+        console.log('RECEIVED SUSCRIPTION: ', subscriptionData)
 
-    this.updateLocationSubscription = this.props.allLocationsQuery.subscribeToMore({
-      document: gql`
-          subscription {
-              updateLocation {
-                  id
-                  latitude
-                  longitude
-                  traveller {
-                      name
-                      id
-                  }
-              }
+        if (subscriptionData.data.Location.mutation === 'CREATED') {
+
+          console.log('CREATED: ', subscriptionData)
+
+          const newLocation = subscriptionData.data.node
+          const locations = previousState.allLocations.concat([newLocation])
+          return {
+            allLocations: locations,
           }
-      `,
-      variables: null,
-      updateQuery: (previousState, {subscriptionData}) => {
-        const locations = previousState.allLocations.slice()
-        const updatedLocation = subscriptionData.data.updateLocation
-        const oldLocationIndex = locations.findIndex(location => {
-          return updatedLocation.id === location.id
-        })
-        locations[oldLocationIndex] = updatedLocation
-        return {
-          allLocations: locations,
         }
+        else if (subscriptionData.data.Location.mutation === 'UPDATED') {
+
+          console.log('UPDATED: ', subscriptionData)
+
+          const locations = previousState.allLocations.slice()
+          const updatedLocation = subscriptionData.data.node
+          const oldLocationIndex = locations.findIndex(location => {
+            return updatedLocation.id === location.id
+          })
+          locations[oldLocationIndex] = updatedLocation
+          return {
+            allLocations: locations,
+          }
+        }
+
+        return previousState
       }
     })
 
@@ -257,6 +215,7 @@ class WorldChat extends Component {
 
     if (nextProps.allLocationsQuery.allLocations) {
       const newMarkers = nextProps.allLocationsQuery.allLocations.map(location => {
+        console.log(location, location.traveller)
         return {
           travellerName: location.traveller.name,
           position: {
@@ -324,24 +283,14 @@ class WorldChat extends Component {
     })
   }
 
-  _createNewTraveller = async () => {
-    const createTravellerResponse = await this.props.createTravellerMutation({
-      variables: {
-        name: this.props.name,
-      }
-    })
-    const newTraveller = createTravellerResponse.data.createTraveller
-    this.setState({
-      travellerId: newTraveller.id
-    })
-
+  _createNewTraveller = () => {
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(position => {
-        console.log('Create location: ', position)
-        this.props.createLocationMutation({
+        console.log('Create traveller and location: ', this.props.name, position)
+        this.props.createTravellerAndLocationMutation({
           variables: {
-            travellerId: newTraveller.id,
+            name: this.props.name,
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
           }
@@ -351,9 +300,9 @@ class WorldChat extends Component {
       // Create fake location
       window.alert("We could not retrieve your location, so we're putting you right next to Santa 🎅❄️")
       const nortpholeCoordinates = this._generateRandomNorthPolePosition()
-      this.props.createLocationMutation({
+      this.props.createTravellerAndLocationMutation({
         variables: {
-          travellerId: newTraveller.id,
+          name: this.props.name,
           latitude: nortpholeCoordinates.latitude,
           longitude: nortpholeCoordinates.longitude,
         }
@@ -437,10 +386,8 @@ class WorldChat extends Component {
 
 export default withApollo(
   graphql(allLocations, {name: 'allLocationsQuery'})(
-    graphql(createTraveller, {name: 'createTravellerMutation'})(
-      graphql(createLocation, {name: 'createLocationMutation'})(
-        graphql(updateLocation, {name: 'updateLocationMutation'})(WorldChat)
-      )
+    graphql(createTravellerAndLocation, {name: 'createTravellerAndLocationMutation'})(
+      graphql(updateLocation, {name: 'updateLocationMutation'})(WorldChat)
     )
   )
 )

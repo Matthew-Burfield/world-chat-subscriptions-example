@@ -40,33 +40,6 @@ class Chat extends Component {
   componentDidMount() {
 
     // Subscribe to new messages
-    this.createMessageSubscription = this.props.allMessagesQuery.subscribeToMore({
-      document: gql`
-          subscription {
-              createMessage {
-                  text
-                  createdAt
-                  sentBy {
-                      name
-                      location {
-                          latitude
-                          longitude
-                      }
-                  }
-              }
-          }
-      `,
-      variables: null,
-      updateQuery: (previousState, {subscriptionData}) => {
-        const newMessage = subscriptionData.data.createMessage
-        const messages = previousState.allMessages.concat([newMessage])
-
-        return {
-          allMessages: messages,
-        }
-      },
-      onError: (err) => console.error(err),
-    })
 
   }
 
