@@ -1,3 +1,6 @@
+
+// shamelessly copied from:
+// http://stackoverflow.com/questions/6108819/javascript-timestamp-to-relative-time-eg-2-seconds-ago-one-week-ago-etc-best
 export function timeDifference(current, previous) {
 
   var msPerMinute = 60 * 1000;
