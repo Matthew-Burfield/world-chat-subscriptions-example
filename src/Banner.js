@@ -17,7 +17,7 @@ export default class Banner extends Component {
   }
 
   _openTutorial = () => {
-    const win = window.open('https://dev.graph.cool/docs/tutorials/worldchat-subscriptions-example-ui0eizishe', '_blank');
+    const win = window.open('https://www.graph.cool/docs/tutorials/worldchat-subscriptions-example-ui0eizishe', '_blank');
     win.focus();
   }
 
