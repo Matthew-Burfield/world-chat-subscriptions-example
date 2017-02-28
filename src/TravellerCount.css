@@ -3,6 +3,15 @@
     background-color: white;
 }
 
+.LoadingContainer {
+    height: 100px;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: rgba(0,0,0,.5);
+}
+
 .TravellerCount {
     display: flex;
     justify-content: center;

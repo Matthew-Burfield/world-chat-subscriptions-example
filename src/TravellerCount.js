@@ -15,10 +15,8 @@ class TravellerCount extends Component {
 
   render() {
 
-    console.log('TravellerCount - render:', this.props)
-
     if (this.props.allTravellersCountQuery.loading) {
-      return <div className='TravellerCount'>Loading Travellers</div>
+      return <div className='Container'>Loading Travellers</div>
     }
 
     return (
