@@ -42,13 +42,12 @@ class Chat extends Component {
   }
 
   componentDidMount() {
-
     // Subscribe to `CREATED`-mutations
     this.createMessageSubscription = this.props.allMessagesQuery.subscribeToMore({
       document: gql`
           subscription {
               Message(filter: {
-                  mutation_in: [CREATED]
+                mutation_in: [CREATED]
               }) {
                   node {
                       id
@@ -63,10 +62,8 @@ class Chat extends Component {
           }
       `,
       updateQuery: (previousState, {subscriptionData}) => {
-        // console.log('Chat - received subscription: ', previousState, subscriptionData)
         const newMessage = subscriptionData.data.Message.node
         const messages = previousState.allMessages.concat([newMessage])
-        // console.log('Chat - new messages: ', messages.length, messages) // prints the correct array with the new message!!
         return {
           allMessages: messages
         }
@@ -82,14 +79,7 @@ class Chat extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    // console.log('Chat - componentWillReceiveProps: ', nextProps)
-  }
-
   render() {
-
-    // console.log('Chat - render: ', this.props.allMessagesQuery)
-
     return (
       <div className='Chat'>
         <TravellerCount />
@@ -128,4 +118,3 @@ class Chat extends Component {
 export default graphql(createMessage, {name : 'createMessageMutation'})(
   graphql(allMessages, {name: 'allMessagesQuery'})(Chat)
 )
-
