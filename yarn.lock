@@ -4232,9 +4232,9 @@ rc@~1.1.6:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-apollo@^0.11.2:
-  version "0.11.2"
-  resolved "https://registry.yarnpkg.com/react-apollo/-/react-apollo-0.11.2.tgz#39c134b5a18854e73a15a40a7fa2aeda27212da7"
+react-apollo@^0.12.0:
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/react-apollo/-/react-apollo-0.12.0.tgz#60025d0738a7962367c8d4fbe95f8917d6dc05c8"
   dependencies:
     graphql-anywhere "^2.0.0"
     hoist-non-react-statics "^1.2.0"

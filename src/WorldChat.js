@@ -5,9 +5,8 @@ import { GoogleMap, withGoogleMap, Marker, InfoWindow } from 'react-google-maps'
 import withScriptjs from "react-google-maps/lib/async/withScriptjs"
 import Chat from './Chat'
 import Banner from './Banner'
-import { graphql } from 'react-apollo'
 import gql from 'graphql-tag'
-import { withApollo } from 'react-apollo'
+import { withApollo, graphql } from 'react-apollo'
 
 const allLocations = gql`
     query allLocations {
@@ -26,7 +25,7 @@ const allLocations = gql`
 const travellerForName = gql`
     query travellerForName($name: String!) {
         allTravellers(filter: {
-        name: $name,
+          name: $name,
         }) {
             id
             name
@@ -39,18 +38,17 @@ const travellerForName = gql`
     }
 `
 
-const createTravellerAndLocation = gql`
-    mutation createTravellerAndLocation($name: String!, $latitude: Float!, $longitude: Float!) {
-        createTraveller(name: $name, location: {
-        latitude: $latitude,
-        longitude: $longitude,
+const createLocationAndTraveller = gql`
+    mutation createLocationAndTraveller($name: String!, $latitude: Float!, $longitude: Float!) {
+        createLocation(latitude: $latitude, longitude: $longitude, traveller: {
+            name: $name
         }) {
             id
-            name
-            location {
+            latitude
+            longitude
+            traveller {
                 id
-                latitude
-                longitude
+                name
             }
         }
     }
@@ -63,6 +61,7 @@ const updateLocation = gql`
                 id
                 name
             }
+            id
             latitude
             longitude
         }
@@ -111,35 +110,11 @@ class WorldChat extends Component {
 
   async componentDidMount() {
 
-    // this.newMessageObserver = this.props.client.subscribe({
-    //   query: gql`
-    //       subscription {
-    //           Message {
-    //               mutation
-    //               node {
-    //                   text
-    //                   sentBy {
-    //                       name
-    //                   }
-    //               }
-    //           }
-    //       }
-    //   `,
-    // }).subscribe({
-    //   next(data) {
-    //     console.log('A mutation of the following type happened on the Message model: ', data)
-    //     // console.log('The changed data looks as follows: ', data.node)
-    //   },
-    //   error(error) {
-    //     console.error('Subscription callback with error: ', error)
-    //   },
-    // })
-
     this.locationSubscription = this.props.allLocationsQuery.subscribeToMore({
       document: gql`
           subscription {
               Location(filter: {
-              mutation_in: [CREATED, UPDATED]
+                mutation_in: [CREATED, UPDATED]
               }) {
                   mutation
                   node {
@@ -156,24 +131,22 @@ class WorldChat extends Component {
       `,
       variables: null,
       updateQuery: (previousState, {subscriptionData}) => {
-        console.log('RECEIVED SUSCRIPTION: ', subscriptionData)
+        console.log('RECEIVED SUBSCRIPTION: ', previousState, subscriptionData)
 
         if (subscriptionData.data.Location.mutation === 'CREATED') {
-
           console.log('CREATED: ', subscriptionData)
 
-          const newLocation = subscriptionData.data.node
+          const newLocation = subscriptionData.data.Location.node
           const locations = previousState.allLocations.concat([newLocation])
           return {
             allLocations: locations,
           }
         }
         else if (subscriptionData.data.Location.mutation === 'UPDATED') {
-
           console.log('UPDATED: ', subscriptionData)
 
           const locations = previousState.allLocations.slice()
-          const updatedLocation = subscriptionData.data.node
+          const updatedLocation = subscriptionData.data.Location.node
           const oldLocationIndex = locations.findIndex(location => {
             return updatedLocation.id === location.id
           })
@@ -215,7 +188,6 @@ class WorldChat extends Component {
 
     if (nextProps.allLocationsQuery.allLocations) {
       const newMarkers = nextProps.allLocationsQuery.allLocations.map(location => {
-        console.log(location, location.traveller)
         return {
           travellerName: location.traveller.name,
           position: {
@@ -229,6 +201,77 @@ class WorldChat extends Component {
       })
     }
 
+  }
+
+  _removeAllMarkers() {
+    const newMarkers = this.state.markers.slice()
+    newMarkers.forEach(marker => {
+      marker.showInfo = false
+    })
+    this.setState({
+      markers: newMarkers,
+    })
+  }
+
+  _createNewTraveller = () => {
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(position => {
+        this.props.createLocationAndTravellerMutation({
+          variables: {
+            name: this.props.name,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          }
+        }).then(result => {
+          this.setState({travellerId: result.data.createLocation.traveller.id})
+        })
+      })
+    } else {
+      // Create fake location
+      window.alert("We could not retrieve your location, so we're putting you close to Santa 🎅❄️")
+      const nortpholeCoordinates = this._generateRandomNorthPolePosition()
+      this.props.createLocationAndTravellerMutation({
+        variables: {
+          name: this.props.name,
+          latitude: nortpholeCoordinates.latitude,
+          longitude: nortpholeCoordinates.longitude,
+        }
+      }).then(result => {
+        this.setState({travellerId: result.data.createLocation.traveller.id})
+      })
+    }
+  }
+
+  _updateExistingTraveller = (existingTraveller) => {
+
+    this.setState({
+      travellerId: existingTraveller.id
+    })
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(position => {
+        // console.log('Update location: ', position)
+
+        this.props.updateLocationMutation({
+          variables: {
+            locationId: existingTraveller.location.id,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          }
+        })
+      })
+    } else {
+      // Create fake location
+      const nortpholeCoordinates = this._generateRandomNorthPolePosition()
+      this.props.updateLocationMutation({
+        variables: {
+          locationId: existingTraveller.location.id,
+          latitude: nortpholeCoordinates.latitude,
+          longitude: nortpholeCoordinates.longitude,
+        }
+      })
+    }
   }
 
   handleMapLoad = this.handleMapLoad.bind(this)
@@ -273,81 +316,13 @@ class WorldChat extends Component {
     this._removeAllMarkers()
   }
 
-  _removeAllMarkers() {
-    const newMarkers = this.state.markers.slice()
-    newMarkers.forEach(marker => {
-      marker.showInfo = false
-    })
-    this.setState({
-      markers: newMarkers,
-    })
-  }
-
-  _createNewTraveller = () => {
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(position => {
-        console.log('Create traveller and location: ', this.props.name, position)
-        this.props.createTravellerAndLocationMutation({
-          variables: {
-            name: this.props.name,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          }
-        })
-      })
-    } else {
-      // Create fake location
-      window.alert("We could not retrieve your location, so we're putting you right next to Santa 🎅❄️")
-      const nortpholeCoordinates = this._generateRandomNorthPolePosition()
-      this.props.createTravellerAndLocationMutation({
-        variables: {
-          name: this.props.name,
-          latitude: nortpholeCoordinates.latitude,
-          longitude: nortpholeCoordinates.longitude,
-        }
-      })
-    }
-  }
-
-  _updateExistingTraveller = (existingTraveller) => {
-
-    this.setState({
-      travellerId: existingTraveller.id
-    })
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(position => {
-        console.log('Update location: ', position)
-
-        this.props.updateLocationMutation({
-          variables: {
-            locationId: existingTraveller.location.id,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          }
-        })
-      })
-    } else {
-      // Create fake location
-      const nortpholeCoordinates = this._generateRandomNorthPolePosition()
-      this.props.updateLocationMutation({
-        variables: {
-          locationId: existingTraveller.location.id,
-          latitude: nortpholeCoordinates.latitude,
-          longitude: nortpholeCoordinates.longitude,
-        }
-      })
-    }
-  }
-
   _generateRandomNorthPolePosition = () => {
     const latitude = 64.7555869
     const longitude = -147.34432909999998
     const latitudeAdd = Math.random() > 0.5
     const longitudeAdd = Math.random() > 0.5
-    const latitudeDelta = Math.random()
-    const longitudeDelta = Math.random()
+    const latitudeDelta = Math.random() * 3
+    const longitudeDelta = Math.random() * 3
     const newLatitude = latitudeAdd ? latitude + latitudeDelta : latitude - latitudeDelta
     const newLongitude = longitudeAdd ? longitude + longitudeDelta : longitude - longitudeDelta
     return {latitude: newLatitude, longitude: newLongitude}
@@ -386,7 +361,7 @@ class WorldChat extends Component {
 
 export default withApollo(
   graphql(allLocations, {name: 'allLocationsQuery'})(
-    graphql(createTravellerAndLocation, {name: 'createTravellerAndLocationMutation'})(
+    graphql(createLocationAndTraveller, {name: 'createLocationAndTravellerMutation'})(
       graphql(updateLocation, {name: 'updateLocationMutation'})(WorldChat)
     )
   )
