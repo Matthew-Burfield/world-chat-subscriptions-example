@@ -10,6 +10,11 @@ const createMessage = gql`
         createMessage(text: $text, sentById: $sentById) {
             id
             text
+            createdAt
+            sentBy {
+                id
+                name
+            }
         }
     }
 `
@@ -17,14 +22,12 @@ const createMessage = gql`
 const allMessages = gql`
     query allMessages {
         allMessages {
+            id
             text
             createdAt
             sentBy {
+                id
                 name
-                location {
-                    latitude
-                    longitude
-                }
             }
         }
     }
@@ -39,30 +42,32 @@ class Chat extends Component {
 
   componentDidMount() {
 
-    // Subscribe to new messages
+    // Subscribe to `CREATED`-mutations
     this.createMessageSubscription = this.props.allMessagesQuery.subscribeToMore({
       document: gql`
           subscription {
-              createMessage {
-                  text
-                  createdAt
-                  sentBy {
-                      name
-                      location {
-                          latitude
-                          longitude
+              Message(filter: {
+                  mutation_in: [CREATED]
+              }) {
+                  node {
+                      id
+                      text
+                      createdAt
+                      sentBy {
+                          id
+                          name
                       }
                   }
               }
           }
       `,
-      variables: null,
       updateQuery: (previousState, {subscriptionData}) => {
-        const newMessage = subscriptionData.data.createMessage
+        // console.log('Chat - received subscription: ', previousState, subscriptionData)
+        const newMessage = subscriptionData.data.Message.node
         const messages = previousState.allMessages.concat([newMessage])
-
+        // console.log('Chat - new messages: ', messages.length, messages) // prints the correct array with the new message!!
         return {
-          allMessages: messages,
+          allMessages: messages
         }
       },
       onError: (err) => console.error(err),
@@ -70,24 +75,33 @@ class Chat extends Component {
 
   }
 
+  componentWillReceiveProps(nextProps) {
+    // console.log('Chat - componentWillReceiveProps: ', nextProps)
+  }
+
   render() {
+
+    // console.log('Chat - render: ', this.props.allMessagesQuery)
+
     return (
       <div className='Chat'>
         <ChatMessages
           messages={this.props.allMessagesQuery.allMessages || []}
         />
-        <ChatInput
-          message={this.state.message}
-          onTextInput={(message) => this.setState({message})}
-          onResetText={() => this.setState({message: ''})}
-          onSend={this._onSend}
-        />
+        {Boolean(this.props.travellerId) &&
+          <ChatInput
+            message={this.state.message}
+            onTextInput={(message) => this.setState({message})}
+            onResetText={() => this.setState({message: ''})}
+            onSend={this._onSend}
+          />
+        }
       </div>
     )
   }
 
   _onSend = () => {
-    console.log('Send message: ', this.state.message)
+    // console.log('Send message: ', this.state.message, this.props.travellerId)
     this.props.createMessageMutation({
       variables: {
         text: this.state.message,
