@@ -75,6 +75,9 @@ const WorldChatGoogleMap =  _.flowRight(
       defaultZoom={3}
       defaultCenter={{ lat: 52.53734, lng: 13.395 }}
       onClick={props.onMapClick}
+      defaultOptions={{
+        disableDefaultUI: true
+      }}
     >
       {Boolean(props.markers) && props.markers.map((marker , index) => (
         <Marker
