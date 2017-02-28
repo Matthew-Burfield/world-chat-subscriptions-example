@@ -131,11 +131,7 @@ class WorldChat extends Component {
       `,
       variables: null,
       updateQuery: (previousState, {subscriptionData}) => {
-        console.log('RECEIVED SUBSCRIPTION: ', previousState, subscriptionData)
-
         if (subscriptionData.data.Location.mutation === 'CREATED') {
-          console.log('CREATED: ', subscriptionData)
-
           const newLocation = subscriptionData.data.Location.node
           const locations = previousState.allLocations.concat([newLocation])
           return {
@@ -143,8 +139,6 @@ class WorldChat extends Component {
           }
         }
         else if (subscriptionData.data.Location.mutation === 'UPDATED') {
-          console.log('UPDATED: ', subscriptionData)
-
           const locations = previousState.allLocations.slice()
           const updatedLocation = subscriptionData.data.Location.node
           const oldLocationIndex = locations.findIndex(location => {
@@ -184,8 +178,6 @@ class WorldChat extends Component {
 
   componentWillReceiveProps(nextProps) {
 
-    console.log('WorldChat - componentWillReceiveProps - nextProps: ', nextProps)
-
     if (nextProps.allLocationsQuery.allLocations) {
       const newMarkers = nextProps.allLocationsQuery.allLocations.map(location => {
         return {
@@ -216,6 +208,7 @@ class WorldChat extends Component {
   _createNewTraveller = () => {
 
     if (navigator.geolocation) {
+      // Retrieve location
       navigator.geolocation.getCurrentPosition(position => {
         this.props.createLocationAndTravellerMutation({
           variables: {
@@ -251,8 +244,7 @@ class WorldChat extends Component {
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(position => {
-        // console.log('Update location: ', position)
-
+        // Retrieve location
         this.props.updateLocationMutation({
           variables: {
             locationId: existingTraveller.location.id,

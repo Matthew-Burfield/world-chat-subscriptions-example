@@ -62,10 +62,10 @@ class Chat extends Component {
           }
       `,
       updateQuery: (previousState, {subscriptionData}) => {
-        console.log('Chat - received subscription: ', previousState, subscriptionData)
+        // console.log('Chat - received subscription: ', previousState, subscriptionData)
         const newMessage = subscriptionData.data.Message.node
         const messages = previousState.allMessages.concat([newMessage])
-        console.log('Chat - new messages: ', messages.length, messages) // prints the correct array with the new message!!
+        // console.log('Chat - new messages: ', messages.length, messages) // prints the correct array with the new message!!
         return {
           allMessages: messages
         }
@@ -76,7 +76,7 @@ class Chat extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    console.log('Chat - componentWillReceiveProps: ', nextProps)
+    // console.log('Chat - componentWillReceiveProps: ', nextProps)
   }
 
   render() {
@@ -101,7 +101,7 @@ class Chat extends Component {
   }
 
   _onSend = () => {
-    console.log('Send message: ', this.state.message, this.props.travellerId)
+    // console.log('Send message: ', this.state.message, this.props.travellerId)
     this.props.createMessageMutation({
       variables: {
         text: this.state.message,
