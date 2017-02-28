@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import './Chat.css'
 import ChatInput from './ChatInput'
 import ChatMessages from './ChatMessages'
+import TravellerCount from './TravellerCount'
 import { graphql } from 'react-apollo'
 import gql from 'graphql-tag'
 
@@ -91,6 +92,7 @@ class Chat extends Component {
 
     return (
       <div className='Chat'>
+        <TravellerCount />
         <ChatMessages
           messages={this.props.allMessagesQuery.allMessages || []}
           endRef={this._endRef}

@@ -56,7 +56,7 @@ class App extends Component {
     return (
       <ApolloProvider client={client}>
         <WorldChat
-          name={name}
+          name={localStorage.getItem(WORLDCHAT_USERNAME_KEY)}
         />
       </ApolloProvider>
     )

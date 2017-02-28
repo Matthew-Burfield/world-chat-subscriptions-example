@@ -197,6 +197,8 @@ class WorldChat extends Component {
 
   _createNewTraveller = () => {
 
+    console.log('Create new traveller: ', this.props.name)
+
     if (navigator.geolocation) {
       // Retrieve location
       navigator.geolocation.getCurrentPosition(position => {
