@@ -75,6 +75,12 @@ class Chat extends Component {
 
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.allMessagesQuery.allMessages !== this.props.allMessagesQuery.allMessages && this.endRef) {
+      this.endRef.scrollIntoView()
+    }
+  }
+
   componentWillReceiveProps(nextProps) {
     // console.log('Chat - componentWillReceiveProps: ', nextProps)
   }
@@ -87,6 +93,7 @@ class Chat extends Component {
       <div className='Chat'>
         <ChatMessages
           messages={this.props.allMessagesQuery.allMessages || []}
+          endRef={this._endRef}
         />
         {Boolean(this.props.travellerId) &&
           <ChatInput
@@ -98,6 +105,10 @@ class Chat extends Component {
         }
       </div>
     )
+  }
+
+  _endRef = (element) => {
+    this.endRef = element
   }
 
   _onSend = () => {

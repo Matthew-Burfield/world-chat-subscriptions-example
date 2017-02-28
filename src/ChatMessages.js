@@ -15,6 +15,8 @@ class ChatMessages extends Component {
             time={message.createdAt}
           />)
         })}
+        <div style={ {float:"left", clear: "both"} }
+             ref={el => { this.props.endRef(el) }}></div>
       </div>
     )
   }
