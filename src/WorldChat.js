@@ -291,7 +291,6 @@ class WorldChat extends Component {
   handleMarkerClick = this.handleMarkerClick.bind(this)
   handleMarkerClose = this.handleMarkerClose.bind(this)
 
-  // Toggle to 'true' to show InfoWindow and re-renders component
   handleMarkerClick(targetMarker) {
     this.setState({
       markers: this.state.markers.map(marker => {
