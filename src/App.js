@@ -7,9 +7,9 @@ import {SubscriptionClient, addGraphQLSubscriptions} from 'subscriptions-transpo
 
 
 // Create WebSocket client
-// wss://dev.subscriptions.graph.cool/
-const wsClient = new SubscriptionClient(`wss://dev.subscriptions.graph.cool/v1/cizihyyf606qo01370lwki4k8`, {
-// const wsClient = new SubscriptionClient(`wss://subscriptions.graph.cool/cizfapt9y2jca01393hzx96w9`, {
+// wss://dev.subscriptions.graph.cool/v1/
+// const wsClient = new SubscriptionClient(`wss://dev.subscriptions.graph.cool/v1/cizfapt9y2jca01393hzx96w9`, {
+const wsClient = new SubscriptionClient(`wss://subscriptions.graph.cool/v1/cizfapt9y2jca01393hzx96w9`, {
   reconnect: true,
   connectionParams: {
     // Pass any arguments you want for initialization
@@ -18,7 +18,7 @@ const wsClient = new SubscriptionClient(`wss://dev.subscriptions.graph.cool/v1/c
 
 // const networkInterface = createNetworkInterface({ uri: 'https://api.graph.cool/simple/v1/cizfapt9y2jca01393hzx96w9' })
 const networkInterface = createNetworkInterface({
-  uri: 'https://dev.api.graph.cool/simple/v1/cizihyyf606qo01370lwki4k8'
+  uri: 'https://api.graph.cool/simple/v1/cizfapt9y2jca01393hzx96w9'
 })
 
 

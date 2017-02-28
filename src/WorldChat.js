@@ -78,7 +78,7 @@ const WorldChatGoogleMap =  _.flowRight(
       defaultCenter={{ lat: 52.53734, lng: 13.395 }}
       onClick={props.onMapClick}
     >
-      {props.markers.map((marker , index) => (
+      {Boolean(props.markers) && props.markers.map((marker , index) => (
         <Marker
           {...marker}
           showInfo={false}
@@ -217,7 +217,17 @@ class WorldChat extends Component {
             longitude: position.coords.longitude,
           }
         }).then(result => {
-          this.setState({travellerId: result.data.createLocation.traveller.id})
+          const newMarkers = this.state.markers.concat[{
+            travellerName: result.data.createLocation.traveller.name,
+            position: {
+              lat: result.data.createLocation.latitude,
+              lng: result.data.createLocation.longitude,
+            }
+          }]
+          this.setState({
+            travellerId: result.data.createLocation.traveller.id,
+            markers: newMarkers
+          })
         })
       })
     } else {
@@ -231,7 +241,17 @@ class WorldChat extends Component {
           longitude: nortpholeCoordinates.longitude,
         }
       }).then(result => {
-        this.setState({travellerId: result.data.createLocation.traveller.id})
+        const newMarkers = this.state.markers.concat[{
+          travellerName: result.data.createLocation.traveller.name,
+          position: {
+            lat: result.data.createLocation.latitude,
+            lng: result.data.createLocation.longitude,
+          }
+        }]
+        this.setState({
+          travellerId: result.data.createLocation.traveller.id,
+          markers: newMarkers
+        })
       })
     }
   }
