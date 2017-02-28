@@ -22,11 +22,9 @@ const allLocations = gql`
     }
 `
 
-const travellerForName = gql`
-    query travellerForName($name: String!) {
-        allTravellers(filter: {
-          name: $name,
-        }) {
+const travellerForId = gql`
+    query travellerForId($id: ID!) {
+        Traveller(id: $id) {
             id
             name
             location {
@@ -82,7 +80,7 @@ const WorldChatGoogleMap =  _.flowRight(
         <Marker
           {...marker}
           showInfo={false}
-          icon={require('./assets/marker.svg')}
+          icon={marker.isOwnMarker ? require('./assets/marker_blue.svg') : require('./assets/marker.svg')}
           onClick={() => props.onMarkerClick(marker)}
           defaultAnimation={2}
           key={index}
@@ -99,6 +97,7 @@ const WorldChatGoogleMap =  _.flowRight(
   )
 )
 
+const WORLDCHAT_USER_ID_KEY = 'WORLDCHAT_USER_ID'
 
 class WorldChat extends Component {
 
@@ -154,38 +153,29 @@ class WorldChat extends Component {
       }
     })
 
-    // Check for traveller with this name
-    const travellerForNameResponse = await this.props.client.query(
-      {
-        query: travellerForName,
-        variables: {
-          name: this.props.name,
-        },
-      }
-    )
+    const travellerId = localStorage.getItem(WORLDCHAT_USER_ID_KEY)
 
-    // Create new traveller in backend
-    if (travellerForNameResponse.data.allTravellers.length === 0) {
+    // Check if traveller already exists
+    if (!Boolean(travellerId)) {
       this._createNewTraveller()
     }
-    // Traveller already exists in backend
     else {
-      const existingTraveller = travellerForNameResponse.data.allTravellers[0]
-      this._updateExistingTraveller(existingTraveller)
+      this._updateExistingTraveller(travellerId)
     }
-
   }
 
   componentWillReceiveProps(nextProps) {
 
     if (nextProps.allLocationsQuery.allLocations) {
       const newMarkers = nextProps.allLocationsQuery.allLocations.map(location => {
+        const isOwnMarker = location.traveller.id === this.state.travellerId
         return {
-          travellerName: location.traveller.name,
+          travellerName: isOwnMarker ? location.traveller.name + ' (You)' : location.traveller.name,
           position: {
             lat: location.latitude,
             lng: location.longitude,
-          }
+          },
+          isOwnMarker: isOwnMarker
         }
       })
       this.setState({
@@ -217,20 +207,14 @@ class WorldChat extends Component {
             longitude: position.coords.longitude,
           }
         }).then(result => {
-          const newMarkers = this.state.markers.concat[{
-            travellerName: result.data.createLocation.traveller.name,
-            position: {
-              lat: result.data.createLocation.latitude,
-              lng: result.data.createLocation.longitude,
-            }
-          }]
+          localStorage.setItem(WORLDCHAT_USER_ID_KEY, result.data.createLocation.traveller.id)
           this.setState({
             travellerId: result.data.createLocation.traveller.id,
-            markers: newMarkers
           })
         })
       })
-    } else {
+    }
+    else {
       // Create fake location
       window.alert("We could not retrieve your location, so we're putting you close to Santa 🎅❄️")
       const nortpholeCoordinates = this._generateRandomNorthPolePosition()
@@ -241,26 +225,33 @@ class WorldChat extends Component {
           longitude: nortpholeCoordinates.longitude,
         }
       }).then(result => {
-        const newMarkers = this.state.markers.concat[{
-          travellerName: result.data.createLocation.traveller.name,
-          position: {
-            lat: result.data.createLocation.latitude,
-            lng: result.data.createLocation.longitude,
-          }
-        }]
+        localStorage.setItem(WORLDCHAT_USER_ID_KEY, result.data.createLocation.traveller.id)
         this.setState({
           travellerId: result.data.createLocation.traveller.id,
-          markers: newMarkers
         })
       })
     }
   }
 
-  _updateExistingTraveller = (existingTraveller) => {
+  _updateExistingTraveller = async (travellerId) => {
 
     this.setState({
-      travellerId: existingTraveller.id
+      travellerId: travellerId
     })
+
+    // Check for traveller with this Id
+    const travellerForIdResponse = await this.props.client.query(
+      {
+        query: travellerForId,
+        variables: {
+          id: travellerId,
+        },
+      }
+    )
+
+    console.log('Update existing traveller: ', travellerForIdResponse)
+    const existingTraveller = travellerForIdResponse.data.Traveller
+    console.log('existingTraveller: ', existingTraveller)
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(position => {

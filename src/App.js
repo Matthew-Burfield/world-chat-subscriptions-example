@@ -33,20 +33,22 @@ const client = new ApolloClient({
   dataIdFromObject: o => o.id,
 })
 
+const WORLDCHAT_USERNAME_KEY = 'WORLDCHAT_USERNAME'
+
 class App extends Component {
 
   componentWillMount() {
 
     // testing
-    localStorage.removeItem('name')
+    // localStorage.removeItem(WORLDCHAT_USERNAME_KEY)
 
-    let name
-    if (!Boolean(localStorage.name)) {
+    let name = localStorage.getItem(WORLDCHAT_USERNAME_KEY)
+    if (!Boolean(name)) {
       name = generateStupidName()
-      localStorage.setItem('name', name)
-    } else {
-      name = localStorage.name
+      console.log('No name in localStorage, generated new: ', name)
+      localStorage.setItem(WORLDCHAT_USERNAME_KEY, name)
     }
+    console.log('Name in localStorage: ', name)
 
   }
 
@@ -54,7 +56,7 @@ class App extends Component {
     return (
       <ApolloProvider client={client}>
         <WorldChat
-          name={localStorage.name}
+          name={name}
         />
       </ApolloProvider>
     )
