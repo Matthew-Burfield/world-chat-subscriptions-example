@@ -21,7 +21,7 @@ const createMessage = gql`
 
 const allMessages = gql`
     query allMessages {
-        allMessages {
+        allMessages(first: 100) {
             id
             text
             createdAt
