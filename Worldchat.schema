@@ -1,13 +1,3 @@
-# Worldchat
-
-A realtime chat application that displays the locations of all the chat participants on a map.
-
-You can run your own instance of the application by first creating a Graphcool backend and then running the app locally using `npm`.
-
-
-## 1. Create a Graphcool backend
-
-```graphql
 type Traveller {
   id: ID!
   createdAt: DateTime!
@@ -33,4 +23,3 @@ type Location {
   latitude: Float!
   longitude: Float!
 }
-```
