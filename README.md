@@ -7,7 +7,7 @@ A realtime chat application that displays the locations of all the chat particip
 You can run your own instance of the application by first creating a Graphcool backend and then running the app locally using `npm`.
 
 
-## 1. Create a Graphcool backend
+## 1. Create a Graphcool backend [![graphql-up](http://static.graph.cool/images/graphql-up.svg)](https://www.graph.cool/graphql-up/new?source=https://raw.githubusercontent.com/graphcool-examples/worldchat-subscriptions-example/master/Worldchat.schema)
 
 You'll need the following GraphQL schema to get started with the Worlchat application:
 
@@ -50,7 +50,7 @@ graphcool create Worldchat.schema
 You can also create the data model manually in our [console](https://console.graph.cool).
 
 
-## 2. Connect the App to your backend [![graphql-up](http://static.graph.cool/images/graphql-up.svg)](https://www.graph.cool/graphql-up/new?source=https://raw.githubusercontent.com/graphcool-examples/worldchat-subscriptions-example/master/Worldchat.schema)
+## 2. Connect the App to your backend
 
 In `App.js`, you need to adjust the URLs that are used to connect to the GraphQL server.
 
