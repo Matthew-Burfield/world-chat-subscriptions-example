@@ -50,7 +50,7 @@ graphcool create Worldchat.schema
 You can also create the data model manually in our [console](https://console.graph.cool).
 
 
-## 2. Connect the App to your backend
+## 2. Connect the App to your backend [![graphql-up](http://static.graph.cool/images/graphql-up.svg)](https://www.graph.cool/graphql-up/new?source=https://raw.githubusercontent.com/graphcool-examples/worldchat-subscriptions-example/master/Worldchat.schema)
 
 In `App.js`, you need to adjust the URLs that are used to connect to the GraphQL server.
 
