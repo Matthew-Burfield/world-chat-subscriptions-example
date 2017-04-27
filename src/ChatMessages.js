@@ -11,7 +11,7 @@ class ChatMessages extends Component {
           return (<ChatMessage
             key={i}
             message={message.text}
-            username={message.sentBy.name}
+            username={message.sentBy ? message.sentBy.name : 'Anonymous'}
             time={message.createdAt}
           />)
         })}
