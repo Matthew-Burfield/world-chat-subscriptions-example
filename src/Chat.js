@@ -115,6 +115,7 @@ class Chat extends Component {
 
 }
 
-export default graphql(createMessage, {name : 'createMessageMutation'})(
-  graphql(allMessages, {name: 'allMessagesQuery'})(Chat)
-)
+export default
+  graphql(createMessage, {name : 'createMessageMutation'})(
+    graphql(allMessages, {name: 'allMessagesQuery'})(Chat)
+  )

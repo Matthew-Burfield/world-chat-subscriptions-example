@@ -1,0 +1,44 @@
+# projectId: "cj2fide4pegu00137snx0d82k"
+
+type File implements Node {
+  contentType: String!
+  createdAt: DateTime!
+  id: ID! @isUnique
+  name: String!
+  secret: String! @isUnique
+  size: Int!
+  updatedAt: DateTime!
+  url: String! @isUnique
+}
+
+type Location implements Node {
+  createdAt: DateTime!
+  id: ID! @isUnique
+  latitude: Float!
+  longitude: Float!
+  traveller: Traveller @relation(name: "TravellerLocation")
+  updatedAt: DateTime!
+}
+
+type Message implements Node {
+  createdAt: DateTime!
+  id: ID! @isUnique
+  sentBy: Traveller @relation(name: "MessagesFromTraveller")
+  text: String!
+  updatedAt: DateTime!
+}
+
+type Traveller implements Node {
+  createdAt: DateTime!
+  id: ID! @isUnique
+  location: Location @relation(name: "TravellerLocation")
+  messages: [Message!]! @relation(name: "MessagesFromTraveller")
+  name: String!
+  updatedAt: DateTime!
+}
+
+type User implements Node {
+  createdAt: DateTime!
+  id: ID! @isUnique
+  updatedAt: DateTime!
+}
